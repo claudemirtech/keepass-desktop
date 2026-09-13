@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <title>KeePass Manager</title>
+    <link rel="icon" type="image/png" href="assets/icons/32x32.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Top Header -->
+    <header class="app-header">
+        <div class="brand">
+            <div class="brand-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+            </div>
+            <span class="brand-title">KeePass Manager</span>
+            <span class="db-badge" id="headerDbBadge" style="display: none;">Database.kdbx</span>
+            <span class="unsaved-badge" id="headerUnsavedBadge">● Não Salvo</span>
+        </div>
+
+        <div class="header-actions" id="headerActions" style="display: none;">
+            <button class="btn btn-primary" id="btnOpenNewEntry">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Nova Senha
+            </button>
+            <button class="btn btn-secondary" id="btnOpenNewGroup">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <line x1="12" y1="11" x2="12" y2="17"></line>
+                    <line x1="9" y1="14" x2="15" y2="14"></line>
+                </svg>
+                Novo Grupo
+            </button>
+            <button class="btn btn-success" id="btnSaveDb" title="Salvar alterações no arquivo KDBX">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Salvar
+            </button>
+            <button class="btn btn-secondary" id="btnLockDb" title="Bloquear e fechar base">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                Bloquear
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Lock Screen View -->
+        <div class="lock-screen" id="lockScreen">
+            <div class="lock-card">
+                <div class="lock-header">
+                    <div class="lock-icon-wrapper">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                    </div>
+                    <h2 class="lock-title">KeePass Database</h2>
+                    <p class="lock-subtitle">Insira a senha mestra para desbloquear o cofre</p>
+                </div>
+
+                <div class="error-banner" id="lockErrorBanner"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Arquivo de Banco (.kdbx)</label>
+                    <div class="input-with-button">
+                        <input type="text" class="input-control" id="dbFilePathInput" placeholder="Caminho para o arquivo .kdbx">
+                        <button class="btn btn-secondary" id="btnBrowseDbFile">Procurar</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Senha Mestra</label>
+                    <div class="input-password-wrapper">
+                        <input type="password" class="input-control" id="dbPasswordInput" placeholder="Digite sua senha mestra...">
+                        <button class="toggle-pwd-btn" id="btnToggleLockPwd" type="button" title="Mostrar/Ocultar senha">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <label class="keyfile-toggle-row">
+                    <input type="checkbox" id="chkUseKeyFile">
+                    <span>Utilizar Arquivo Chave (Key File)</span>
+                </label>
+
+                <div class="form-group" id="keyFileGroup" style="display: none;">
+                    <label class="form-label">Arquivo Chave</label>
+                    <div class="input-with-button">
+                        <input type="text" class="input-control" id="keyFilePathInput" placeholder="Selecione o key file...">
+                        <button class="btn btn-secondary" id="btnBrowseKeyFile">Procurar</button>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" id="btnUnlockDb" style="padding: 12px; font-size: 14px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    Desbloquear Base
+                </button>
+
+                <div class="lock-footer">
+                    <button class="btn-link" id="btnOpenCreateDbModal">Criar novo banco de dados (.kdbx)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div class="dashboard-view" id="dashboardView" style="display: none;">
+            <!-- Left Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-section-header">
+                    <span>Grupos</span>
+                    <button class="btn-icon" id="btnSidebarAddGroup" title="Adicionar Grupo">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="group-list" id="groupsContainer">
+                    <!-- Groups rendered dynamically -->
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <div class="content-toolbar">
+                    <div class="active-group-info">
+                        <h2 class="active-group-title" id="currentGroupTitle">Todas as Senhas</h2>
+                        <span class="active-group-subtitle" id="currentGroupSubtitle">0 entradas</span>
+                    </div>
+
+                    <div class="search-box">
+                        <div class="search-icon">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                        </div>
+                        <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar por título, usuário ou url...">
+                    </div>
+                </div>
+
+                <!-- Table Wrapper -->
+                <div class="entries-table-wrapper" id="entriesTableWrapper">
+                    <table class="entries-table" id="entriesTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Título</th>
+                                <th style="width: 22%;">Usuário</th>
+                                <th style="width: 20%;">Senha</th>
+                                <th style="width: 20%;">URL</th>
+                                <th style="width: 13%; text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="entriesTbody">
+                            <!-- Entries rendered dynamically -->
+                        </tbody>
+                    </table>
+
+                    <!-- Empty State -->
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <div class="empty-state-title" id="emptyStateTitle">Nenhuma senha encontrada</div>
+                        <div class="empty-state-desc" id="emptyStateDesc">Este grupo ainda não possui entradas. Clique em "Nova Senha" para adicionar uma.</div>
+                        <button class="btn btn-primary" id="btnEmptyAddEntry">Adicionar Nova Senha</button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modal: Entry (Add/Edit) -->
+    <div class="modal-overlay" id="entryModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <span class="modal-title" id="entryModalTitle">Nova Senha</span>
+                <button class="btn-icon" id="btnCloseEntryModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="entryEditId">
+
+                <div class="form-group">
+                    <label class="form-label">Grupo</label>
+                    <select class="input-control" id="entryGroupSelect">
+                        <!-- Filled dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Título *</label>
+                    <input type="text" class="input-control" id="entryTitleInput" placeholder="Ex: GitHub, Gmail, AWS...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nome de Usuário / E-mail</label>
+                    <input type="text" class="input-control" id="entryUsernameInput" placeholder="Ex: usuario@email.com">
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <label class="form-label">Senha</label>
+                        <button class="btn-link" id="btnToggleGenerator" type="button" style="font-size: 11px;">
+                            ⚙️ Gerar Senha Forte
+                        </button>
+                    </div>
+                    <div class="input-password-wrapper">
+                        <input type="password" class="input-control" id="entryPasswordInput" placeholder="Senha...">
+                        <button class="toggle-pwd-btn" id="btnToggleEntryPwd" type="button" title="Mostrar/Ocultar">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Strength meter -->
+                    <div class="strength-meter">
+                        <div class="strength-bar" id="pwdStrengthBar"></div>
+                    </div>
+                    <div class="strength-text" id="pwdStrengthText">Força: -</div>
+
+                    <!-- Password Generator Box (Collapsible) -->
+                    <div class="pwd-generator-box" id="pwdGeneratorBox" style="display: none;">
+                        <div class="pwd-slider-row">
+                            <span>Tamanho: <strong id="genLengthDisplay">16</strong></span>
+                            <input type="range" id="genLengthSlider" min="8" max="64" value="16">
+                        </div>
+                        <div class="pwd-options-row">
+                            <label><input type="checkbox" id="chkGenUpper" checked> A-Z</label>
+                            <label><input type="checkbox" id="chkGenLower" checked> a-z</label>
+                            <label><input type="checkbox" id="chkGenNumbers" checked> 0-9</label>
+                            <label><input type="checkbox" id="chkGenSymbols" checked> !@#$</label>
+                        </div>
+                        <button class="btn btn-secondary" id="btnGeneratePwdNow" type="button" style="padding: 6px;">
+                            ⚡ Gerar e Aplicar
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">URL / Website</label>
+                    <input type="text" class="input-control" id="entryUrlInput" placeholder="https://exemplo.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações / Notas</label>
+                    <textarea class="input-control" id="entryNotesInput" rows="3" placeholder="Informações adicionais, perguntas de segurança, etc."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancelEntryModal">Cancelar</button>
+                <button class="btn btn-primary" id="btnSaveEntryModal">Salvar Entrada</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Group (Add) -->
+    <div class="modal-overlay" id="groupModal">
+        <div class="modal-card" style="max-width: 420px;">
+            <div class="modal-header">
+                <span class="modal-title">Novo Grupo</span>
+                <button class="btn-icon" id="btnCloseGroupModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Grupo Pai</label>
+                    <select class="input-control" id="groupParentSelect"></select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Nome do Grupo *</label>
+                    <input type="text" class="input-control" id="groupNameInput" placeholder="Ex: Redes Sociais, Bancos, Trabalho...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancelGroupModal">Cancelar</button>
+                <button class="btn btn-primary" id="btnSaveGroupModal">Criar Grupo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Create New Database -->
+    <div class="modal-overlay" id="createDbModal">
+        <div class="modal-card" style="max-width: 460px;">
+            <div class="modal-header">
+                <span class="modal-title">Criar Novo Banco de Dados KeePass</span>
+                <button class="btn-icon" id="btnCloseCreateDbModal">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="error-banner" id="createDbErrorBanner"></div>
+
+                <div class="form-group">
+                    <label class="form-label">Nome do Cofre</label>
+                    <input type="text" class="input-control" id="newDbNameInput" value="Minhas Senhas" placeholder="Ex: Minhas Senhas">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Local de Salvamento (.kdbx) *</label>
+                    <div class="input-with-button">
+                        <input type="text" class="input-control" id="newDbFilePathInput" placeholder="Clique em Escolher Local...">
+                        <button class="btn btn-secondary" id="btnChooseNewDbLocation">Escolher</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Senha Mestra *</label>
+                    <input type="password" class="input-control" id="newDbPasswordInput" placeholder="Defina a senha mestra...">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Confirmar Senha Mestra *</label>
+                    <input type="password" class="input-control" id="newDbPasswordConfirmInput" placeholder="Confirme a senha mestra...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="btnCancelCreateDbModal">Cancelar</button>
+                <button class="btn btn-primary" id="btnConfirmCreateDb">Criar e Abrir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

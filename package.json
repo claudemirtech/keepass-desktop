@@ -1,0 +1,52 @@
+{
+  "name": "keepass-desktop",
+  "productName": "KeePass Manager",
+  "version": "1.0.0",
+  "description": "Gerenciador de Senhas KeePass",
+  "homepage": "https://github.com/claudemirtech/keepass-desktop",
+  "author": "Claudemir <claudemir@bsd.com.br>",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "pack": "electron-builder --dir"
+  },
+  "keywords": [
+    "keepass",
+    "kdbx",
+    "security"
+  ],
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^36.2.1",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "hash-wasm": "^4.12.0",
+    "kdbxweb": "^2.1.1"
+  },
+  "build": {
+    "appId": "br.com.atomicweb.keepass",
+    "productName": "KeePass Manager",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!Database.kdbx*",
+      "!*.bak",
+      "!README.md",
+      "!database.js"
+    ],
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Utility",
+      "icon": "assets/icon.png"
+    },
+    "deb": {
+      "priority": "optional"
+    }
+  }
+}
