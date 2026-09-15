@@ -1,8 +1,8 @@
 {
   "name": "keepass-desktop",
-  "productName": "KeePass Manager",
+  "productName": "KeePass",
   "version": "1.0.0",
-  "description": "Gerenciador de Senhas KeePass",
+  "description": "KeePass Manager",
   "homepage": "https://github.com/claudemirtech/keepass-desktop",
   "author": "Claudemir <claudemir@bsd.com.br>",
   "main": "main.js",
@@ -27,7 +27,7 @@
   },
   "build": {
     "appId": "br.com.atomicweb.keepass",
-    "productName": "KeePass Manager",
+    "productName": "KeePass",
     "directories": {
       "output": "dist"
     },
@@ -43,7 +43,12 @@
         "deb"
       ],
       "category": "Utility",
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "desktop": {
+        "entry": {
+          "StartupWMClass": "keepass"
+        }
+      }
     },
     "deb": {
       "priority": "optional"
